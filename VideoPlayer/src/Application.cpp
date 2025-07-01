@@ -9,6 +9,7 @@
 #include "VertexArray.h"
 #include "VertexBufferLayout.h"
 #include "Shader.h"
+#include "Texture.h"
 
 int main(void)
 {
@@ -42,59 +43,65 @@ int main(void)
     }
 
     Debug::Log("GL VERSION: " + std::string((const char*)glGetString(GL_VERSION)));
-
-    float positions[]
     {
-        -0.5f, -0.5f,  // 0
-         0.5f, -0.5f, // 1
-         0.5f,  0.5f, // 2
-        -0.5f,  0.5f  // 3
-    };
 
-    unsigned int indices[] =
-    {
-        0, 1, 2,
-        2, 3, 0
-    };
+        float positions[]
+        {
+            -0.5f, -0.5f, 0.0f, 0.0f,  // 0
+             0.5f, -0.5f, 1.0f, 0.0f, // 1
+             0.5f,  0.5f, 1.0f, 1.0f,  // 2
+            -0.5f,  0.5f, 0.0f, 1.0f  // 3
+        };
 
-    VertexArray vertexArray;
-    VertexBuffer vertexBuffer(positions, 4 * 2 * sizeof(float));
+        unsigned int indices[] =
+        {
+            0, 1, 2,
+            2, 3, 0
+        };
 
-    VertexBufferLayout bufferLayout;
-    bufferLayout.Push<float>(2);
-    vertexArray.AddBuffer(vertexBuffer, bufferLayout);
+        VertexArray vertexArray;
+        VertexBuffer vertexBuffer(positions, 4 * 4 * sizeof(float));
 
-    IndexBuffer indexBuffer(indices, 6);
+        VertexBufferLayout bufferLayout;
+        bufferLayout.Push<float>(2); //positions
+        bufferLayout.Push<float>(2); //texture coordinates
+        vertexArray.AddBuffer(vertexBuffer, bufferLayout);
 
-    Shader shader("resources/shaders/unlit.shader");
-    shader.Bind();
-    shader.SetUniform4f("u_color", 0.2f, 0.3f, 1.0f, 1.0f);
+        IndexBuffer indexBuffer(indices, 6);
 
-    vertexArray.UnBind();
-    vertexBuffer.UnBind();
-    indexBuffer.UnBind();
-    shader.UnBind();
-
-    Renderer renderer;
-
-    /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window))
-    {
-        /* Render here */
-        renderer.Clear();
-
+        Shader shader("resources/shaders/unlitTexture.shader");
         shader.Bind();
         shader.SetUniform4f("u_color", 0.2f, 0.3f, 1.0f, 1.0f);
 
-        renderer.Draw(vertexArray, indexBuffer, shader);
+        Texture texture("resources/textures/valkyrie.png");
+        texture.Bind();
+        shader.SetUniform1i("u_Texture", 0);
 
-        /* Swap front and back buffers */
-        glfwSwapBuffers(window);
+        vertexArray.UnBind();
+        vertexBuffer.UnBind();
+        indexBuffer.UnBind();
+        shader.UnBind();
 
-        /* Poll for and process events */
-        glfwPollEvents();
+        Renderer renderer;
+
+        /* Loop until the user closes the window */
+        while (!glfwWindowShouldClose(window))
+        {
+            /* Render here */
+            renderer.Clear();
+
+            shader.Bind();
+            shader.SetUniform4f("u_color", 0.2f, 0.3f, 1.0f, 1.0f);
+
+            renderer.Draw(vertexArray, indexBuffer, shader);
+
+            /* Swap front and back buffers */
+            glfwSwapBuffers(window);
+
+            /* Poll for and process events */
+            glfwPollEvents();
+        }
     }
-
     glfwTerminate();
     return 0;
 }
