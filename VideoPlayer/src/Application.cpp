@@ -10,9 +10,27 @@
 #include "VertexBufferLayout.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "Video.h"
+#include "VideoTexture.h"
 
 int main(void)
 {
+    Video video;
+
+    int frame_width, frame_height;
+    unsigned char* frame_data;
+
+    if (!video.LoadFrame("resources/videos/test.mkv", &frame_width, &frame_height, &frame_data))
+    {
+        Debug::LogError("Couldn't load video frame");
+        return 1;
+    }
+
+    Debug::Log("Returned data");
+    Debug::Log(std::to_string(frame_width));
+    Debug::Log(std::to_string(frame_height));
+    //Debug::Log(std::to_string(frame_data));
+
     GLFWwindow* window;
 
     /* Initialize the library */
@@ -73,8 +91,12 @@ int main(void)
         shader.Bind();
         shader.SetUniform4f("u_color", 0.2f, 0.3f, 1.0f, 1.0f);
 
-        Texture texture("resources/textures/valkyrie.png");
-        texture.Bind();
+        //Texture texture("resources/textures/valkyrie.png");
+        //texture.Bind();
+        //shader.SetUniform1i("u_Texture", 0);
+
+        VideoTexture videoTexture(frame_width, frame_height, frame_data);
+        videoTexture.Bind();
         shader.SetUniform1i("u_Texture", 0);
 
         vertexArray.UnBind();
